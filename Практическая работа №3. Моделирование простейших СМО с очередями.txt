@@ -1,0 +1,202 @@
+Практическая работа №3
+
+Модель 1: Система с 5 коммутаторами и очередями
+
+SIMULATE
+
+K1    STORAGE  1     ; 
+K2    STORAGE  2     ; 
+K3    STORAGE  1     ; 
+K4    STORAGE  3     ; 
+K5    STORAGE  4     ; 
+
+GEN   GENERATE 6,3,,500   ; 
+      TRANSFER ,ROUTE     ; 
+
+ROUTE TRANSFER 0.2,K1QUE,,K2TEST  ; 20% в K1
+
+K1QUE QUEUE    OCHK1
+      ENTER    K1
+      SEIZE    DEVK1
+      DEPART   OCHK1
+      ADVANCE  20,5      ; 
+      RELEASE  DEVK1
+      LEAVE   K1
+      TRANSFER ,EXIT
+
+K2TEST TRANSFER 0.25,K2QUE,,K3TEST ; 25% в K2
+
+K2QUE QUEUE    OCHK2
+      ENTER    K2
+      SEIZE    DEVK2
+      DEPART   OCHK2
+      ADVANCE  10,3      ; 
+      RELEASE  DEVK2
+      LEAVE   K2
+      TRANSFER ,EXIT
+
+K3TEST TRANSFER 0.333,K3QUE,,K4TEST ; 33.3% в K3
+
+K3QUE QUEUE    OCHK3
+      ENTER    K3
+      SEIZE    DEVK3
+      DEPART   OCHK3
+      ADVANCE  30,7      ; 
+      RELEASE  DEVK3
+      LEAVE   K3
+      TRANSFER ,EXIT
+
+K4TEST TRANSFER 0.5,K4QUE,,K5TEST ; 50% в K4
+
+K4QUE QUEUE    OCHK4
+      ENTER    K4
+      SEIZE    DEVK4
+      DEPART   OCHK4
+      ADVANCE  25,6      ; 
+      RELEASE  DEVK4
+      LEAVE   K4
+      TRANSFER ,EXIT
+
+K5TEST QUEUE   OCHK5
+      ENTER    K5         ; 
+      SEIZE    DEVK5
+      DEPART   OCHK5
+      ADVANCE  35,8      ; 
+      RELEASE  DEVK5
+      LEAVE   K5
+
+EXIT  TERMINATE 1
+
+TIMER GENERATE 480       ;
+      TERMINATE 1
+
+      START    1         ; 
+
+Модель 2: Система с ограничением очередей 5 местами
+
+SIMULATE
+
+LOST1 VARIABLE 0
+LOST2 VARIABLE 0  
+LOST3 VARIABLE 0
+LOST4 VARIABLE 0
+LOST5 VARIABLE 0
+
+K1    STORAGE  1
+K2    STORAGE  2
+K3    STORAGE  1
+K4    STORAGE  3
+K5    STORAGE  4
+
+GEN1  GENERATE 6,3,,,1   ; 
+      TRANSFER ,ROUTE1
+
+GEN2  GENERATE 6,3,,,1   ; 
+      TRANSFER ,ROUTE2  
+
+GEN3  GENERATE 6,3,,,1   ; 
+      TRANSFER ,ROUTE3
+
+ROUTE1 TRANSFER 0.2,K1TEST,,K2TEST1
+
+K1TEST TEST L Q$OCHK1,5,K1PROC  ; 
+       SAVEVALUE LOST1+,1       ; 
+       TERMINATE
+*
+K1PROC QUEUE   OCHK1
+       ENTER   K1
+       SEIZE   DEVK1
+       DEPART  OCHK1
+       ADVANCE 20,5
+       RELEASE DEVK1
+       LEAVE  K1
+       TERMINATE
+*
+K2TEST1 TRANSFER 0.25,K2TEST,,K3TEST1
+*
+K2TEST TEST L Q$OCHK2,5,K2PROC  ; Проверка очереди K2 < 5
+       SAVEVALUE LOST2+,1       ; Счетчик потерянных для K2
+       TERMINATE
+*
+K2PROC QUEUE   OCHK2
+       ENTER   K2
+       SEIZE   DEVK2
+       DEPART  OCHK2
+       ADVANCE 10,3
+       RELEASE DEVK2
+       LEAVE  K2
+       TERMINATE
+*
+K3TEST1 TRANSFER 0.333,K3TEST,,K4TEST1
+*
+K3TEST TEST L Q$OCHK3,5,K3PROC  ; Проверка очереди K3 < 5
+       SAVEVALUE LOST3+,1       ; Счетчик потерянных для K3
+       TERMINATE
+*
+K3PROC QUEUE   OCHK3
+       ENTER   K3
+       SEIZE   DEVK3
+       DEPART  OCHK3
+       ADVANCE 30,7
+       RELEASE DEVK3
+       LEAVE  K3
+       TERMINATE
+
+K4TEST1 TRANSFER 0.5,K4TEST,,K5TEST1
+
+K4TEST TEST L Q$OCHK4,5,K4PROC  ; 
+       SAVEVALUE LOST4+,1       ; 
+       TERMINATE
+
+K4PROC QUEUE   OCHK4
+       ENTER   K4
+       SEIZE   DEVK4
+       DEPART  OCHK4
+       ADVANCE 25,6
+       RELEASE DEVK4
+       LEAVE  K4
+       TERMINATE
+
+K5TEST1 TEST L Q$OCHK5,5,K5PROC ; 
+        SAVEVALUE LOST5+,1       ; 
+        TERMINATE
+
+K5PROC QUEUE   OCHK5
+       ENTER   K5
+       SEIZE   DEVK5
+       DEPART  OCHK5
+       ADVANCE 35,8
+       RELEASE DEVK5
+       LEAVE  K5
+       TERMINATE
+
+ROUTE2 TRANSFER 0.2,K1TEST2,,K2TEST2
+K1TEST2 TEST L Q$OCHK1,5,K1PROC2
+        SAVEVALUE LOST1+,1
+        TERMINATE
+K1PROC2 QUEUE OCHK1
+        ENTER K1
+        SEIZE DEVK1
+        DEPART OCHK1
+        ADVANCE 20,5
+        RELEASE DEVK1
+        LEAVE K1
+        TERMINATE
+
+ROUTE3 TRANSFER 0.2,K1TEST3,,K2TEST3
+K1TEST3 TEST L Q$OCHK1,5,K1PROC3
+        SAVEVALUE LOST1+,1
+        TERMINATE
+K1PROC3 QUEUE OCHK1
+        ENTER K1
+        SEIZE DEVK1
+        DEPART OCHK1
+        ADVANCE 20,5
+        RELEASE DEVK1
+        LEAVE K1
+        TERMINATE
+
+TIMER  GENERATE 720       ; 12 часов = 720 минут
+       TERMINATE 1
+
+       START    1         ; Запуск по таймеру
