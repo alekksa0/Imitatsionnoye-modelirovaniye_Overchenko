@@ -1,0 +1,97 @@
+Практическая работа № 4
+Вариант 10.
+Генерация: A=7, B=4, C=10 
+Обработка 1: D=4, E=1, F=7 
+Обработка 2: D=5, E=1, F=9 
+
+Модель для рабочей смены (8 часов)
+SIMULATE
+M1     TABLE    M1TIME,0,10,21    ; 
+M1TIME VARIABLE C1-MARKTIME       ;
+DEFECT VARIABLE 0                 ; 
+GEN    GENERATE 7,3               ; 
+       MARK     MARKTIME          ;
+       QUEUE    OCH1              ; 
+       SEIZE    STANOK1           ; 
+       DEPART   OCH1              ; 
+       ADVANCE  4,3               ; 
+       RELEASE  STANOK1           ; 
+
+       QUEUE    OCH2              ; 
+       SEIZE    STANOK2           ; 
+       DEPART   OCH2              ; 
+       ADVANCE  5,4               ; 
+       RELEASE  STANOK2           ; 
+       TRANSFER 0.1,DEFECTPROC,OK ; 
+
+DEFECTPROC SAVEVALUE DEFECT+,1    ; 
+          QUEUE    OCH1           ; 
+          SEIZE    STANOK1        ;
+          DEPART   OCH1           ; 
+          ADVANCE  4,3            ; 
+          RELEASE STANOK1         ; 
+
+          QUEUE    OCH2           ;
+          SEIZE    STANOK2        ; 
+          DEPART   OCH2           ;
+          ADVANCE  5,4            ; 
+          RELEASE STANOK2         ; 
+
+OK      TABULATE M1               ; 
+        TERMINATE                 ; 
+
+TIMER8  GENERATE 480              ; 
+        TERMINATE 1
+
+        START    1                ;
+
+Модель для рабочей недели (6 дней)
+
+SIMULATE
+
+M1     TABLE    M1TIME,0,10,21    ; 
+M1TIME VARIABLE C1-MARKTIME       ; 
+DEFECT VARIABLE 0                 ; 
+DAYCNT VARIABLE 0                 ;
+
+DAYGEN GENERATE 1440,,,6          ; 
+       SAVEVALUE DAYCNT+,1        ; 
+
+DETGEN GENERATE 7,3               ; 
+       MARK     MARKTIME          ; 
+       QUEUE    OCH1              ; 
+       SEIZE    STANOK1           ; 
+       DEPART   OCH1              ; 
+       ADVANCE  4,3               ; 
+       RELEASE  STANOK1           ; 
+
+       QUEUE    OCH2              ; 
+       SEIZE    STANOK2           ; 
+       DEPART   OCH2              ; 
+       ADVANCE  5,4               ; 
+       RELEASE  STANOK2           ; 
+
+       TRANSFER 0.1,DEFECTPROC,OK ; 
+
+DEFECTPROC SAVEVALUE DEFECT+,1    ; 
+          QUEUE    OCH1           ; 
+          SEIZE    STANOK1        ; 
+          DEPART   OCH1           ; 
+          ADVANCE  4,3            ;
+          RELEASE STANOK1         ; 
+
+          QUEUE    OCH2           ; 
+          SEIZE    STANOK2        ; 
+          DEPART   OCH2           ; 
+          ADVANCE  5,4            ; 
+          RELEASE STANOK2         ; 
+
+OK      TABULATE M1               ; 
+        TERMINATE                 ; 
+
+STOPGEN GENERATE 480              ; 
+        TERMINATE 1               ; 
+
+WEEKEND TERMINATE 1               ; 
+
+       START    1                 ; 
