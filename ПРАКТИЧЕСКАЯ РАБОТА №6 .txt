@@ -1,0 +1,139 @@
+ПРАКТИЧЕСКАЯ РАБОТА №6 (ВАРИАНТ 10)
+
+Часть 1: Моделирование производственного участка
+
+- Интервалы между транзактами: Р;105..136 (равномерное)
+- Задержки:
+1. P; 44..66
+2. FN5
+3. FN4
+4. Э; М=45 (экспоненциальное)
+
+- Частота перехода: 0.230
+
+1.Основная модель производственного участка:
+SIMULATE
+FN4      FUNCTION  RN2,C11
+         0,0/.1,44/.2,48/.3,52/.4,56/.5,60/.6,64/.7,68/.8,72/.9,76/1,80
+FN5      FUNCTION  RN3,C11
+         0,0/.1,5/.2,10/.3,15/.4,20/.5,25/.6,30/.7,35/.8,40/.9,45/1,50
+EXP      FUNCTION  RN4,C24
+         0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,0.915
+         .7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52
+         .94,2.81/.95,2.99/.96,3.2/.97,3.5/.98,3.9/.99,4.6/.995,5.3
+         .998,6.2/.999,7.0/.9997,8.0
+GENER    GENERATE  105,136
+         MARK      TIME1
+ADV1     ADVANCE   55,FN$FN4
+ADV2     ADVANCE   25,FN$FN5
+ADV3     ADVANCE   60,FN$FN4
+ADV4     ADVANCE   45,FNSEXP
+SPLIT    TRANSFER  0.230,GR1,GR2
+GR1      TABULATE  T1
+         TERMINATE
+GR2      TABULATE  T2
+         TERMINATE
+T1       TABLE     M1,0,500,50
+T2       TABLE     M1,0,500,50
+         START     1000
+         END
+
+2.Бесприоритетная система
+SIMULATE
+EXP1     FUNCTION  RN1,C24
+         0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,0.915
+         .7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52
+         .94,2.81/.95,2.99/.96,3.2/.97,3.5/.98,3.9/.99,4.6/.995,5.3
+         .998,6.2/.999,7.0/.9997,8.0
+GEN1     GENERATE  50,FNSEXP1
+         PRIORITY  3
+         TRANSFER  ,VXOD
+GEN2     GENERATE  20,FNSEXP1
+         PRIORITY  2
+         TRANSFER  ,VXOD
+GEN3     GENERATE  15,FNSEXP1
+         PRIORITY  1
+         TRANSFER  ,VXOD
+VXOD     QUEUE     QOA
+         SEIZE     OA
+         DEPART    QOA
+         ADVANCE   10,FNSEXP1
+         RELEASE   OA
+         TERMINATE 1
+         START     500
+         END
+
+3.Система с относительными приоритетами
+SIMULATE
+EXP1     FUNCTION  RN1,C24
+         (те же точки, что выше)
+GEN1     GENERATE  50,FNSEXP1,,,,3
+         TRANSFER  ,VXOD
+GEN2     GENERATE  20,FNSEXP1,,,,2
+         TRANSFER  ,VXOD
+GEN3     GENERATE  15,FNSEXP1,,,,1
+         TRANSFER  ,VXOD
+VXOD     QUEUE     QOA
+         SEIZE     OA
+         DEPART    QOA
+         ADVANCE   10,FNSEXP1
+         RELEASE   OA
+         TERMINATE 1
+         START     500
+         END
+
+4. Система с раздельными очередями
+SIMULATE
+EXP1     FUNCTION  RN1,C24
+         (те же точки)
+GEN1     GENERATE  50,FNSEXP1,,,,3
+         QUEUE     Q1
+         SEIZE     OA
+         DEPART    Q1
+         ADVANCE   10,FNSEXP1
+         RELEASE   OA
+         TERMINATE 1
+GEN2     GENERATE  20,FNSEXP1,,,,2
+         QUEUE     Q2
+         SEIZE     OA
+         DEPART    Q2
+         ADVANCE   10,FNSEXP1
+         RELEASE   OA
+         TERMINATE 1
+GEN3     GENERATE  15,FNSEXP1,,,,1
+         QUEUE     Q3
+         SEIZE     OA
+         DEPART    Q3
+         ADVANCE   10,FNSEXP1
+         RELEASE   OA
+         TERMINATE 1
+         START     500
+         END
+
+5.Система с абсолютными приоритетами (вытеснением)
+SIMULATE
+EXP1     FUNCTION  RN1,C24
+         (те же точки)
+GEN1     GENERATE  50,FNSEXP1,,,,3
+         QUEUE     Q1
+         PREEMPT   OA          ; ВЫТЕСНЕНИЕ!
+         DEPART    Q1
+         ADVANCE   10,FNSEXP1
+         RETURN    OA          ; Возврат устройства
+         TERMINATE 1
+GEN2     GENERATE  20,FNSEXP1,,,,2
+         QUEUE     Q2
+         PREEMPT   OA
+         DEPART    Q2
+         ADVANCE   10,FNSEXP1
+         RETURN    OA
+         TERMINATE 1
+GEN3     GENERATE  15,FNSEXP1,,,,1
+         QUEUE     Q3
+         PREEMPT   OA
+         DEPART    Q3
+         ADVANCE   10,FNSEXP1
+         RETURN    OA
+         TERMINATE 1
+         START     500
+         END
