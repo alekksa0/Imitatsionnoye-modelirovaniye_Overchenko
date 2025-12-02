@@ -1,0 +1,86 @@
+практическая работа №5. Моделирование вычислительных систем с помощью системы GPSS/PC
+
+Программа GPSS для Задачи 5.1 
+
+010  MEM        STORAGE    8
+020  ZEXP       FUNCTION   RN1,C12
+                0,0/.2,.22/.4,.51/.5,.69/.6,.92/.7,1.2/.8,1.61
+                .9,2.3/.95,3/.99,4.6/.999,6.9/1,100
+030  GENERATE   (Exponential(1,0,2))   ;  
+040  QUEUE      A11
+041  TEST GE    Q$A11,5,EXIT           ;    
+050  ENTER      MEM,1
+060  DEPART     A11
+070  TABULATE   Q1                     ;    
+080  MET6       QUEUE    A2
+090  TRANSFER   BOTH,MET1,MET2
+100  MET1       SEIZE    CPU1
+110  DEPART     A2
+120  ADVANCE    5,FNSZEXP              ;   
+130  RELEASE    CPU1
+140  TRANSFER   ,MET3
+150  MET2       SEIZE    CPU2
+160  DEPART     A2
+170  ADVANCE    2,FNSZEXP              ; 
+180  RELEASE    CPU2
+190  MET3       TRANSFER .6,MET5,MET4  ; 
+200  MET4       QUEUE    A3
+210  SEIZE      DISK
+220  DEPART     A3
+230  ADVANCE    5,3                    ;    
+240  RELEASE    DISK
+250  TRANSFER   ,MET6                  ; 
+260  MET5       LEAVE    MEM,1
+270  TERMINATE  1
+271  EXIT       SAVEVALUE LOST+,1      ; 
+272             TERMINATE
+300  START      500                    ; 
+
+
+Программа GPSS для Задачи 5.2
+
+010  ZEXP       FUNCTION   RN1,C12
+                0,0/.2,.22/.4,.51/.5,.69/.6,.92/.7,1.2/.8,1.61
+                .9,2.3/.95,3/.99,4.6/.999,6.9/1,100
+020  GENERATE   6,FNSZEXP              ;  
+030  TRANSFER   .2,MET2,MET1           ;    
+040  MET2       TRANSFER   .25,MET4,MET3
+050  MET1       QUEUE     A11
+060  SEIZE      DISK1
+070  DEPART     A11
+080  ASSIGN     1,DISK1
+090  ADVANCE    15,15                  ;   
+100  TRANSFER   ,MET5
+110  MET3       QUEUE     A2
+120  SEIZE      DISK2
+130  DEPART     A2
+140  ASSIGN     1,DISK2
+150  ADVANCE    15,15
+160  TRANSFER   ,MET5
+170  MET4       QUEUE     A3
+180  SEIZE      DISK3
+190  DEPART     A3
+200  ASSIGN     1,DISK3
+210  ADVANCE    15,15
+220  TRANSFER   ,MET5
+230  MET6       QUEUE     A4           ;  
+240  SEIZE      DISK4
+250  DEPART     A4
+260  ASSIGN     1,DISK4
+270  ADVANCE    15,15
+280  TRANSFER   ,MET5
+290  MET7       QUEUE     A5           ;  
+300  SEIZE      DISK5
+310  DEPART     A5
+320  ASSIGN     1,DISK5
+330  ADVANCE    15,15
+340  MET5       QUEUE     A6
+350  SEIZE      CAN
+360  DEPART     A6
+370  ADVANCE    1.7                    ;   
+380  RELEASE    CAN
+390  RELEASE    P1                     ;  
+400  TERMINATE
+410  GENERATE   150000                 ;   
+420  TERMINATE  1
+430  START      1
