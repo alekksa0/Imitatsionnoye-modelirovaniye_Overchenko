@@ -1,0 +1,127 @@
+ПРАКТИЧЕСКАЯ РАБОТА №7 (ВАРИАНТ 10)
+
+Программа для моделирования участка цеха :
+          SIMULATE
+;
+; 
+; 
+
+; 
+NORM     FUNCTION RN1,C25
+         0,-5/.00003,-4/.00135,-3/.00621,-2.5/.02275,-2
+         /.06681,-1.5/.11507,-1.2/.15866,-1/.21186,-0.8
+         /.27425,-0.6/.34458,-0.4/.42074,-0.2/.5,0
+         /.57926,0.2/.65542,0.4/.72575,0.6/.78814,0.8
+         /.84134,1/.88493,1.2/.93319,1.5/.97725,2
+         /.99379,2.5/.99865,3/.99997,4/1,5
+
+; 
+EXP      FUNCTION RN2,C24
+         0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69
+         /.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83
+         /.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99
+         /.96,3.2/.97,3.5/.98,3.9/.99,4.6/.995,5.3
+         /.998,6.2/.999,7.0/.9997,8.0
+
+; 
+ADV1_1   VARIABLE RN3*6+17        ; 
+ADV1_3   VARIABLE 3*FNSEXP        ; 
+ADV2_1   VARIABLE 11              ; 
+ADV2_3   VARIABLE FN$NORM*5+31    ; 
+
+; 
+         INITIAL X1,10            ; Вариант 10
+         INITIAL X2,100           ; 10² = 100
+
+; 
+; 
+; 
+
+; 
+GENERATE 1000                     ; 
+;
+; 
+; 
+
+; Проверка времени смены
+TEST1    TEST LE M1,360,SMENA1   ; 
+         TRANSFER ,SMENA3        ; 
+
+SMENA1   QUEUE    S1Q
+         ENTER    S1MEM,1        ; 
+
+; 
+         SPLIT    2,CHAST1       ;  
+         SEIZE    RAB1_1         ; 
+         ADVANCE  V$ADV1_1       ; 
+         RELEASE  RAB1_1
+CHAST1   ASSEMBLE 3              ; 
+
+; 
+         ASSIGN   1,8            ;   
+         SEIZE    RAB1_2         ;   
+CYCLE1   ADVANCE  V$ADV2_1       ;  
+         LOOP     1,CYCLE1       ;   
+         RELEASE  RAB1_2
+
+         LEAVE    S1MEM,1        ; 
+         DEPART   S1Q
+         TRANSFER ,KONEC
+
+;
+; 
+;
+
+SMENA3   QUEUE    S3Q
+         ENTER    S3MEM,1        ; 
+
+; 
+         SPLIT    2,CHAST3       ; 
+         SEIZE    RAB3_1         ; 
+         ADVANCE  V$ADV1_3       ; 
+         RELEASE  RAB3_1
+CHAST3   ASSEMBLE 3              ; 
+
+; 
+         ASSIGN   2,7            ;   
+         SEIZE    RAB3_2         ; 
+CYCLE3   ADVANCE  V$ADV2_3       ;  
+         LOOP     2,CYCLE3       ;   
+         RELEASE  RAB3_2
+
+         LEAVE    S3MEM,1        ;    
+         DEPART   S3Q
+
+; 
+; 
+; 
+KONEC    TABULATE TIME_TAB       ;   
+         TERMINATE
+
+; 
+; 
+;
+
+; 
+TIME_TAB TABLE   M1,0,1000,100
+
+; 
+         RESOURCE RAB1_1,3       ; 
+         RESOURCE RAB1_2,4       ; 
+         RESOURCE RAB3_1,3       ; 
+         RESOURCE RAB3_2,3       ; 
+
+         STORAGE  S1MEM,10       ; 
+         STORAGE  S3MEM,10       ; 
+
+; 
+SM_GEN   GENERATE 360            ; 
+         ASSIGN   3,1            ; 
+         TERMINATE
+
+; 
+         GENERATE 720
+         TERMINATE 1
+
+         START    1              ; 
+         END
