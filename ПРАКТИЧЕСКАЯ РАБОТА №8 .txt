@@ -1,0 +1,130 @@
+ПРАКТИЧЕСКАЯ РАБОТА №8 (ВАРИАНТ 10)
+программа GPSS для моделирования работы с клиентами:
+            SIMULATE
+
+;
+; 
+; 
+
+; 
+QUEUE_LIM EQU  10          ; 
+
+; 
+; 
+; 
+
+;
+CLI_GEN  GENERATE 6,3               ; 
+; 
+         TEST LE  Q$OP1,Q$OP2,TO_OP1,TO_OP2
+
+TO_OP1   TRANSFER ,OP1_QUEUE
+TO_OP2   TRANSFER ,OP2_QUEUE
+
+; 
+; 
+; 
+OP1_QUEUE QUEUE   Q_OP1
+          
+          ; 
+          TEST L  Q$Q_OP1,QUEUE_LIM,OP1_OK
+          
+          ; 
+          TERMINATE
+          
+OP1_OK    SEIZE   OPERATOR1
+          DEPART  Q_OP1
+          
+          ; 
+          ADVANCE 10,5              ; [5,15] минут
+          
+          RELEASE OPERATOR1
+          TERMINATE
+
+; 
+; 
+;
+OP2_QUEUE QUEUE   Q_OP2
+          
+          ; 
+          TEST L  Q$Q_OP2,QUEUE_LIM,OP2_OK
+          
+          ; 
+          TERMINATE
+          
+OP2_OK    SEIZE   OPERATOR2
+          DEPART  Q_OP2
+          
+          ;  
+          ADVANCE 20,7              ; [13,27] минут
+          
+          RELEASE OPERATOR2
+          TERMINATE
+
+; 
+; 
+; 
+
+;  
+CALL_GEN  GENERATE 50,5             ; 
+          
+          ; 
+          GATE NU  OPERATOR1,NO_CALL
+          
+          ; 
+          PREEMPT OPERATOR1,,CALL_BACK,,RE
+          
+          ; 
+          ADVANCE 6,3               ; [3,9] минут
+          
+          ; 
+          RETURN  OPERATOR1
+          
+CALL_BACK TERMINATE                 ; 
+NO_CALL   TERMINATE                 ; 
+
+; 
+; 
+;
+
+; 
+DIR_GEN   GENERATE 55,6             ; 
+          
+          ; 
+          GATE NU  OPERATOR2,NO_DIR
+          
+          ; 
+          PREEMPT OPERATOR2,,DIR_BACK
+          
+          ; 
+          ADVANCE 7,5               ; 
+          
+          ; 
+          RETURN  OPERATOR2
+          
+DIR_BACK  ; 
+          PRIORITY 2                ; 
+          TRANSFER ,CLI_GEN         ; 
+          
+NO_DIR    TERMINATE                 ; 
+
+;
+; 
+;
+
+; 
+          INITIAL X1,0              ; 
+          INITIAL X2,0              ;   
+          INITIAL X3,0              ;  
+          INITIAL X4,0              ; 
+
+; 
+TERM_STAT TERMINATE 1
+          SAVEVALUE SERVED+,1       ; 
+          
+; 
+DAY_END   GENERATE 480
+          TERMINATE 1
+
+          START    1                ; 
+          END
